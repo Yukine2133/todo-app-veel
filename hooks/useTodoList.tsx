@@ -5,15 +5,21 @@ import { useEffect, useState } from "react";
 export function useTodoList() {
   const [todos, setTodos] = useState<ITodo[]>([]);
   const [newTodo, setNewTodo] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  // Generate a unique ID (avoiding backend's duplicate 201)
+  const generateUniqueId = () => Date.now() + Math.floor(Math.random() * 10000);
 
   // Add todo
   const handleAddTodo = async () => {
-    const tempId = Date.now();
+    if (!newTodo.trim()) return;
+
+    const tempId = generateUniqueId();
 
     const optimisticTodo: ITodo = {
       userId: 1,
       id: tempId,
-      title: newTodo,
+      title: newTodo.trim(),
       completed: false,
     };
 
@@ -22,7 +28,17 @@ export function useTodoList() {
 
     try {
       const res = await createTodo(newTodo);
-      setTodos((prev) => prev.map((todo) => (todo.id === tempId ? res : todo)));
+
+      // Override the duplicate ID from the API
+      const savedTodo = {
+        ...res,
+        id: tempId,
+        userId: 1,
+      };
+
+      setTodos((prev) =>
+        prev.map((todo) => (todo.id === tempId ? savedTodo : todo))
+      );
     } catch (error) {
       alert("Failed to add todo.");
       setTodos((prev) => prev.filter((todo) => todo.id !== tempId));
@@ -42,7 +58,7 @@ export function useTodoList() {
     }
   };
 
-  // Update todo
+  // Toggle completed
   const handleToggleTodo = async (id: number) => {
     const prevTodos = todos;
     const toggled = todos.find((todo) => todo.id === id);
@@ -62,16 +78,21 @@ export function useTodoList() {
     }
   };
 
-  // Fetch todos
+  // Fetch initial todos
   useEffect(() => {
     const fetchTodos = async () => {
       try {
         const data = await getTodos();
-        setTodos(data);
+        setTodos(
+          data.map((todo: ITodo) => ({ ...todo, id: generateUniqueId() }))
+        );
       } catch (error) {
         alert("Failed to fetch todos.");
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchTodos();
   }, []);
 
@@ -82,5 +103,6 @@ export function useTodoList() {
     handleAddTodo,
     handleDeleteTodo,
     handleToggleTodo,
+    loading,
   };
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { useTodoList } from "@/hooks/useTodoList";
 
@@ -12,6 +11,7 @@ export default function TodoList() {
     handleAddTodo,
     handleDeleteTodo,
     handleToggleTodo,
+    loading,
   } = useTodoList();
 
   return (
@@ -33,43 +33,50 @@ export default function TodoList() {
       </div>
 
       <div className="space-y-2">
-        {todos.map((todo) => (
-          <div
-            key={todo.id}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
-          >
-            <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                id={`todo-${todo.id}`}
-                checked={todo.completed}
-                onChange={() => handleToggleTodo(todo.id)}
-                className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label
-                htmlFor={`todo-${todo.id}`}
-                className={`text-sm ${
-                  todo.completed
-                    ? "line-through text-gray-500"
-                    : "text-gray-900"
-                }`}
-              >
-                {todo.title}
-              </label>
-            </div>
-            <button
-              onClick={() => handleDeleteTodo(todo.id)}
-              className="text-gray-500 hover:text-red-500 focus:outline-none"
+        {!loading &&
+          todos.map((todo) => (
+            <div
+              key={todo.id}
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
             >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
-        ))}
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id={`todo-${todo.id}`}
+                  checked={todo.completed}
+                  onChange={() => handleToggleTodo(todo.id)}
+                  className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label
+                  htmlFor={`todo-${todo.id}`}
+                  className={`text-sm ${
+                    todo.completed
+                      ? "line-through text-gray-500"
+                      : "text-gray-900"
+                  }`}
+                >
+                  {todo.title}
+                </label>
+              </div>
+              <button
+                onClick={() => handleDeleteTodo(todo.id)}
+                className="text-gray-500 hover:text-red-500 focus:outline-none"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+
+        {loading && (
+          <p className="text-2xl text-black text-center">Loading...</p>
+        )}
       </div>
 
-      <div className="text-sm text-gray-500 pt-2">
-        {todos.filter((todo) => !todo.completed).length} items left
-      </div>
+      {!loading && (
+        <div className="text-sm text-gray-500 pt-2">
+          {todos.filter((todo) => !todo.completed).length} items left
+        </div>
+      )}
     </div>
   );
 }
