@@ -26,7 +26,7 @@ export default function TodoList() {
         />
         <button
           onClick={handleAddTodo}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="px-4 py-2 cursor-pointer bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           Add
         </button>
@@ -45,7 +45,7 @@ export default function TodoList() {
                   id={`todo-${todo.id}`}
                   checked={todo.completed}
                   onChange={() => handleToggleTodo(todo.id)}
-                  className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 cursor-pointer text-blue-500 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label
                   htmlFor={`todo-${todo.id}`}
@@ -60,7 +60,7 @@ export default function TodoList() {
               </div>
               <button
                 onClick={() => handleDeleteTodo(todo.id)}
-                className="text-gray-500 hover:text-red-500 focus:outline-none"
+                className="text-gray-500 hover:text-red-500 focus:outline-none cursor-pointer"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
