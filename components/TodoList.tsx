@@ -17,6 +17,19 @@ export default function TodoList() {
   const [newTodo, setNewTodo] = useState("");
 
   const handleAddTodo = async () => {
+    const tempId = Date.now();
+
+    const optimisticTodo: ITodo = {
+      userId: 1,
+      id: tempId,
+      title: newTodo,
+      completed: false,
+    };
+
+    // Optimistically update UI
+    setTodos((prev) => [...prev, optimisticTodo]);
+    setNewTodo("");
+
     try {
       const res = await fetch(`${API_URL}`, {
         method: "POST",
@@ -28,12 +41,17 @@ export default function TodoList() {
           "Content-type": "application/json",
         },
       });
-      const newTodoItem = await res.json();
-      setTodos([...todos, newTodoItem]);
+
+      const savedTodo = await res.json();
+
+      // Replace temporary todo with actual one
+      setTodos((prev) =>
+        prev.map((todo) => (todo.id === tempId ? savedTodo : todo))
+      );
     } catch (error) {
-      alert(error);
-    } finally {
-      setNewTodo("");
+      alert("Failed to add todo.");
+      // Rollback
+      setTodos((prev) => prev.filter((todo) => todo.id !== tempId));
     }
   };
 
@@ -51,44 +69,48 @@ export default function TodoList() {
   }, []);
 
   const handleDeleteTodo = async (id: number) => {
+    const prevTodos = todos;
+    // Optimistic UI update
+    setTodos((prev) => prev.filter((todo) => todo.id !== id));
+
     try {
       await fetch(`${API_URL}/${id}`, {
         method: "DELETE",
       });
-      setTodos((prevTodos) => {
-        return prevTodos.filter((todo) => {
-          return todo.id !== id;
-        });
-      });
     } catch (error) {
-      alert(error);
+      alert("Failed to delete todo.");
+      // Rollback
+      setTodos(prevTodos);
     }
   };
 
   const handleToggleTodo = async (id: number) => {
+    const prevTodos = todos;
+    const toggled = todos.find((todo) => todo.id === id);
+
+    if (!toggled) return;
+
+    // Optimistic UI update
+    setTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+
     try {
       await fetch(`${API_URL}/${id}`, {
         method: "PATCH",
         body: JSON.stringify({
-          completed: !todos.find((todo) => todo.id === id)?.completed,
+          completed: !toggled.completed,
         }),
         headers: {
           "Content-type": "application/json",
         },
       });
-      setTodos((prevTodos) => {
-        return prevTodos.map((todo) => {
-          if (todo.id === id) {
-            return {
-              ...todo,
-              completed: !todo.completed,
-            };
-          }
-          return todo;
-        });
-      });
     } catch (error) {
-      alert(error);
+      alert("Failed to toggle todo.");
+      // Rollback
+      setTodos(prevTodos);
     }
   };
 
