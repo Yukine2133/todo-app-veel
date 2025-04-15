@@ -2,117 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
-
-interface ITodo {
-  userId: number;
-  id: number;
-  title: string;
-  completed: boolean;
-}
-
-const API_URL = "https://jsonplaceholder.typicode.com/todos";
+import { useTodoList } from "@/hooks/useTodoList";
 
 export default function TodoList() {
-  const [todos, setTodos] = useState<ITodo[]>([]);
-  const [newTodo, setNewTodo] = useState("");
-
-  const handleAddTodo = async () => {
-    const tempId = Date.now();
-
-    const optimisticTodo: ITodo = {
-      userId: 1,
-      id: tempId,
-      title: newTodo,
-      completed: false,
-    };
-
-    // Optimistically update UI
-    setTodos((prev) => [...prev, optimisticTodo]);
-    setNewTodo("");
-
-    try {
-      const res = await fetch(`${API_URL}`, {
-        method: "POST",
-        body: JSON.stringify({
-          title: newTodo,
-          completed: false,
-        }),
-        headers: {
-          "Content-type": "application/json",
-        },
-      });
-
-      const savedTodo = await res.json();
-
-      // Replace temporary todo with actual one
-      setTodos((prev) =>
-        prev.map((todo) => (todo.id === tempId ? savedTodo : todo))
-      );
-    } catch (error) {
-      alert("Failed to add todo.");
-      // Rollback
-      setTodos((prev) => prev.filter((todo) => todo.id !== tempId));
-    }
-  };
-
-  useEffect(() => {
-    const fetchTodos = async () => {
-      try {
-        const res = await fetch(`${API_URL}?_limit=10`);
-        const data = await res.json();
-        setTodos(data);
-      } catch (error) {
-        alert(error);
-      }
-    };
-    fetchTodos();
-  }, []);
-
-  const handleDeleteTodo = async (id: number) => {
-    const prevTodos = todos;
-    // Optimistic UI update
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
-
-    try {
-      await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-      });
-    } catch (error) {
-      alert("Failed to delete todo.");
-      // Rollback
-      setTodos(prevTodos);
-    }
-  };
-
-  const handleToggleTodo = async (id: number) => {
-    const prevTodos = todos;
-    const toggled = todos.find((todo) => todo.id === id);
-
-    if (!toggled) return;
-
-    // Optimistic UI update
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-
-    try {
-      await fetch(`${API_URL}/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          completed: !toggled.completed,
-        }),
-        headers: {
-          "Content-type": "application/json",
-        },
-      });
-    } catch (error) {
-      alert("Failed to toggle todo.");
-      // Rollback
-      setTodos(prevTodos);
-    }
-  };
+  const {
+    todos,
+    newTodo,
+    setNewTodo,
+    handleAddTodo,
+    handleDeleteTodo,
+    handleToggleTodo,
+  } = useTodoList();
 
   return (
     <div className="space-y-6">
