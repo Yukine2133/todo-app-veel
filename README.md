@@ -1,7 +1,3 @@
-Here's a **simple README** explaining how to run the project:
-
----
-
 # Todo App
 
 This is a simple Todo app built with **Next.js**, **React**, and **Tailwind CSS**. It allows users to add, delete, and toggle tasks using an API (mocked by JSONPlaceholder).
