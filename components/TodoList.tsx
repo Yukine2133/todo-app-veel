@@ -50,9 +50,47 @@ export default function TodoList() {
     fetchTodos();
   }, []);
 
-  const handleDeleteTodo = (id: number) => {};
+  const handleDeleteTodo = async (id: number) => {
+    try {
+      await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      });
+      setTodos((prevTodos) => {
+        return prevTodos.filter((todo) => {
+          return todo.id !== id;
+        });
+      });
+    } catch (error) {
+      alert(error);
+    }
+  };
 
-  const handleToggleTodo = (id: number) => {};
+  const handleToggleTodo = async (id: number) => {
+    try {
+      await fetch(`${API_URL}/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          completed: !todos.find((todo) => todo.id === id)?.completed,
+        }),
+        headers: {
+          "Content-type": "application/json",
+        },
+      });
+      setTodos((prevTodos) => {
+        return prevTodos.map((todo) => {
+          if (todo.id === id) {
+            return {
+              ...todo,
+              completed: !todo.completed,
+            };
+          }
+          return todo;
+        });
+      });
+    } catch (error) {
+      alert(error);
+    }
+  };
 
   return (
     <div className="space-y-6">
