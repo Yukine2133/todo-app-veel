@@ -10,20 +10,37 @@ interface ITodo {
   completed: boolean;
 }
 
+const API_URL = "https://jsonplaceholder.typicode.com/todos";
+
 export default function TodoList() {
   const [todos, setTodos] = useState<ITodo[]>([]);
   const [newTodo, setNewTodo] = useState("");
 
-  const handleAddTodo = () => {
-    setNewTodo("");
+  const handleAddTodo = async () => {
+    try {
+      const res = await fetch(`${API_URL}`, {
+        method: "POST",
+        body: JSON.stringify({
+          title: newTodo,
+          completed: false,
+        }),
+        headers: {
+          "Content-type": "application/json",
+        },
+      });
+      const newTodoItem = await res.json();
+      setTodos([...todos, newTodoItem]);
+    } catch (error) {
+      alert(error);
+    } finally {
+      setNewTodo("");
+    }
   };
 
   useEffect(() => {
     const fetchTodos = async () => {
       try {
-        const res = await fetch(
-          "https://jsonplaceholder.typicode.com/todos?_limit=10"
-        );
+        const res = await fetch(`${API_URL}?_limit=10`);
         const data = await res.json();
         setTodos(data);
       } catch (error) {
@@ -45,7 +62,7 @@ export default function TodoList() {
           placeholder="Add a new todo..."
           value={newTodo}
           onChange={(e) => setNewTodo(e.target.value)}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="flex-1 text-black px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         <button
           onClick={handleAddTodo}
